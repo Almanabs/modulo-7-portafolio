@@ -1,0 +1,83 @@
+<<h1 class="text-center mt-5">Listado de productos.</h1>
+
+<section class="listado_productos">
+    <div class="row">
+    </div>
+</section>
+
+<script>
+    const cargarProductos = (productos) => {
+        let contenedorProductos = document.querySelector(".listado_productos .row");
+        if (productos.length > 0) {
+            contenedorProductos.innerHTML = "";
+            let acumuladorCards = "";
+            productos.forEach(product => {
+                let template = `
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card m-auto" style="width: 80%;">
+                            <img src="${product.img}" class="card-img-top" alt="${product.nombre}">
+                            <div class="card-body">
+                                <h5 class="card-title">${product.nombre}</h5>
+                                <p class="card-text">${product.descripcion}</p>
+                                <p class="card-text">Precio: ${product.precio}</p>
+                                <p class="card-text">Stock: ${product.stock}</p>
+                                <button class="btn btn-primary agregar-carrito" data-id="${product.id}" data-stock="${product.stock}">Agregar al carro</button>
+                                <a href="/productos/${product.id}" class="btn btn-success">Ver Detalle</a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                acumuladorCards += template;
+            });
+            contenedorProductos.innerHTML = acumuladorCards;
+
+            // Agregamos el evento click a los botones "Agregar al carro" de cada producto
+            const agregarCarritoButtons = document.querySelectorAll(".agregar-carrito");
+            agregarCarritoButtons.forEach((button) => {
+                button.addEventListener("click", () => {
+                    const id = button.dataset.id;
+                    const stock = button.dataset.stock;
+                    agregarCarro(id, stock);
+                });
+            });
+
+        } else {
+            contenedorProductos.innerHTML = "<h2 class='text-center'>No hay productos para mostrar</h2>";
+        }
+    };
+
+    fetch("http://localhost:3000/api/productos")
+        .then(response => response.json())
+        .then(data => {
+            if (data.code == 500) {
+                console.log(data.message)
+            } else {
+                data.productos = data.productos.filter(producto => producto.stock > 0);
+                cargarProductos(data.productos)
+            }
+        })
+        .catch(error => {
+            console.log(error)
+            alert("Algo ha salido mal al cargar los productos.")
+        })
+
+    document.querySelector("#linkHome").classList.add("active");
+
+    const agregarCarro = (id, stock) => {
+        let storageCarro = JSON.parse(localStorage.getItem("productos")) || [];
+
+        let buscarProducto = storageCarro.find(producto => producto.id == id);
+        if (buscarProducto) {
+            if (buscarProducto.cantidad >= stock) {
+                buscarProducto.cantidad = stock;
+                alert("Usted alcanzó el stock máximo de productos: " + stock);
+            } else {
+                buscarProducto.cantidad = buscarProducto.cantidad + 1        }
+    } else {
+        storageCarro.push({ id, cantidad: 1 });
+    }
+
+    localStorage.setItem("productos", JSON.stringify(storageCarro));
+    alert("Producto agregado correctamente.");
+};
+</script>

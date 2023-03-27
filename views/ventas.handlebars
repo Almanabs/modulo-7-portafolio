@@ -1,0 +1,65 @@
+<h1 class="text-center">Listado de ventas</h1>
+
+<section>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Listado de ventas</h2>
+        <button class="btn btn-danger" onclick="limpiarTabla()">Limpiar ventas</button>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Fecha</th>
+                <th scope="col">Monto venta</th>
+            </tr>
+        </thead>
+        <tbody id="cuerpoTabla">
+
+        </tbody>
+    </table>
+</section>
+<script>
+  const cuerpoTabla = document.querySelector("#cuerpoTabla");
+
+const cargarTabla = (ventas) => {
+    cuerpoTabla.innerHTML = "";
+
+    let acumuladorFilas= "";
+    ventas.ventas.forEach(venta => {
+        let template = `
+            <tr>
+                <th scope="row">${venta.id}</th>
+                <td>${venta.fecha}</td>
+                <td>${venta.total}</td>
+            </tr>
+        `
+        acumuladorFilas+= template;
+        
+    })
+
+    cuerpoTabla.innerHTML = acumuladorFilas;
+}
+
+const traerVentas = () => {
+    fetch("http://localhost:3000/api/ventas")
+        .then(response => response.json())
+        .then(data => {
+            if(data.code == 400 || data.code == 500){
+                alert("Se ha generado el siguiente problema: " + data.message)
+            }else{
+                cargarTabla(data);
+            }
+
+        }).catch(error => console.log(error))
+
+}
+
+const limpiarTabla = () => {
+    cuerpoTabla.innerHTML = "";
+}
+
+traerVentas();
+
+
+
+</script>
